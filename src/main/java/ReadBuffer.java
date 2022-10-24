@@ -1,4 +1,5 @@
 import com.alibaba.fastjson.JSON;
+import dao.SQLInfo;
 import io.vertx.core.buffer.Buffer;
 import protocol.QueryPacket;
 
@@ -8,7 +9,7 @@ import java.util.Map;
 
 public class ReadBuffer {
 
-    public static Buffer readFromBuffer(Buffer buffer) {
+    public static Buffer readFromBuffer(SQLInfo sqlInfo, Buffer buffer) {
 
         byte[] bytes = buffer.getBytes();
 
@@ -36,7 +37,7 @@ public class ReadBuffer {
                 if (bytes[5] == 0 ){ // mysql client
                     queryPacket.read1(bytes, 0);
                     String sql = new String(queryPacket.message);
-                    byte [] enc_bytes = sqlConvert(sql);
+                    byte [] enc_bytes = sqlConvert(sqlInfo, sql);
                     buffer.setBytes(3 + 1 + 1 + 1 + 1, enc_bytes);
                     buffer.setByte(0, (byte) ((enc_bytes.length + 3) & 0xff) );
                     buffer.setByte(1, (byte) ((enc_bytes.length + 3) >>> 8) );
@@ -46,7 +47,7 @@ public class ReadBuffer {
                 else { //jdbc
                     queryPacket.read1(bytes, 1);
                     String sql = new String(queryPacket.message);
-                    byte [] enc_bytes = sqlConvert(sql);
+                    byte [] enc_bytes = sqlConvert(sqlInfo, sql);
                     buffer.setBytes(3 + 1 + 1 , enc_bytes);
                     buffer.setByte(0, (byte) ((enc_bytes.length+1) & 0xff) );
                     buffer.setByte(1, (byte) ((enc_bytes.length+1) >>> 8) );
@@ -69,8 +70,8 @@ public class ReadBuffer {
 
     }
 
-    public static byte[] sqlConvert(String sql){
-        String db = "192.168.51.170:3306/dahua_yuanqu_test";
+    public static byte[] sqlConvert(SQLInfo sqlInfo, String sql){
+        String db = "dahua_yuanqu_test";
         HashMap<String, String> headers = new HashMap<>(3);
         String requestUrl = "http://localhost:8888/encrypt_sql1";
         String jsonStr = "{\"db\": " +"\"" + db +"\"" + ", \"sql\": "  +"\""+ sql  + "\""+ "}";
@@ -83,10 +84,25 @@ public class ReadBuffer {
 //            System.out.println("key为："+obj+"值为："+mapTypes.get(obj));
 //        }
         new_sql = (String) mapTypes.get("encrypt_sql");
+        String table = (String) mapTypes.get("table");
+        sqlInfo.setEnc_sql(new_sql);
+        sqlInfo.setTable(table);
+        sqlInfo.setSql(sql);
+        sqlInfo.setDatabase(db);
         // 并接收返回结果
-        System.out.println("加密sql: " + new_sql);
+        System.out.println("加密sql: " + new_sql + " table: "+ table);
 
         return new_sql.getBytes();
+    }
+
+    public static Buffer readFromMysqlBuffer(Buffer buffer) {
+        byte[] bytes = buffer.getBytes();
+        System.out.println("MYSQL DATA:  " + bytes.length);
+        for (int i = 0 ;i <bytes.length; i++){
+            System.out.print((bytes[i] & 0xFF) + " " );
+        }
+        System.out.println();
+        return buffer;
     }
 
 
