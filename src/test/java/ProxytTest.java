@@ -15,7 +15,7 @@ public class ProxytTest {
         try {
             Class.forName(name);//指定连接类型
             Connection conn = DriverManager.getConnection(url, user, password);//url为代理服务器的地址
-            PreparedStatement pst = (PreparedStatement) conn.prepareStatement("select * from user_info limit 1 ;");//准备执行语句
+            PreparedStatement pst = (PreparedStatement) conn.prepareStatement("select * from user_info limit 3 ;");//准备执行语句
             ResultSet resultSet = pst.executeQuery();
             while (resultSet.next()) {
                 System.out.println(resultSet.getString(1) + ": " + resultSet.getString(2));

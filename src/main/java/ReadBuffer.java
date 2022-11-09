@@ -2,6 +2,8 @@ import com.alibaba.fastjson.JSON;
 import dao.SQLInfo;
 import io.vertx.core.buffer.Buffer;
 import protocol.QueryPacket;
+import protocol.ResultsetRowPacket;
+import protocol.util.HexUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -98,10 +100,14 @@ public class ReadBuffer {
     public static Buffer readFromMysqlBuffer(Buffer buffer) {
         byte[] bytes = buffer.getBytes();
         System.out.println("MYSQL DATA:  " + bytes.length);
-        for (int i = 0 ;i <bytes.length; i++){
-            System.out.print((bytes[i] & 0xFF) + " " );
-        }
-        System.out.println();
+//        for (int i = 0 ;i <bytes.length; i++){
+//            System.out.print((bytes[i] & 0xFF) + " " );
+//        }
+//        System.out.println();
+        ResultsetRowPacket resultSetRow = new ResultsetRowPacket();
+        resultSetRow.read(bytes);
+        System.out.println(resultSetRow);
+        System.out.println(resultSetRow.columnCount);
         return buffer;
     }
 
