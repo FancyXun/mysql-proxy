@@ -1,7 +1,8 @@
 import com.alibaba.fastjson.JSON;
+//import com.sun.org.apache.xpath.internal.operations.String;
 import dao.SQLInfo;
 import io.vertx.core.buffer.Buffer;
-import protocol.QueryPacket;
+import protocol.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,12 +17,13 @@ public class ReadBuffer {
 
 
         if (bytes.length > 6){
+//            System.out.println("hhh");
 
             if (bytes[4]==3){
 
                 QueryPacket queryPacket = new QueryPacket();
 
-//                System.out.println("DATA:  " + bytes.length);
+//                System.out.println("mysql client DATA:  " + bytes.length);
 //                for (int i = 0 ;i <bytes.length; i++){
 //                    System.out.print((bytes[i] & 0xFF) + " " );
 //                }
@@ -97,11 +99,63 @@ public class ReadBuffer {
 
     public static Buffer readFromMysqlBuffer(Buffer buffer) {
         byte[] bytes = buffer.getBytes();
-        System.out.println("MYSQL DATA:  " + bytes.length);
-        for (int i = 0 ;i <bytes.length; i++){
-            System.out.print((bytes[i] & 0xFF) + " " );
+        System.out.println("MYSQL response DATA:  " + bytes.length);
+//        for (int i = 0 ;i <bytes.length; i++){
+//            System.out.print((bytes[i] & 0xFF) + " " );
+//        }
+        System.out.println(bytes[0]);
+//        switch (bytes[0]){
+//            case 0:
+//                System.out.println("ok packet");
+//                break;
+//            case 1&0xFF:
+//                System.out.println("Error packet");
+//                break;
+//            default:
+//                System.out.println("data result packet");
+//        }
+        if (bytes[0]==1){
+            System.out.println("data packet:");
+//            System.out.println(bytes);
+            for (int i = 0 ;i <bytes.length; i++){
+//                System.out.print((bytes[i] & 0xFF) + " " );
+                System.out.print((bytes[i])+" ");
+            }
+            System.out.println();
+            MysqlMessage mysqlMessage = new MysqlMessage(bytes);
+            ColumnCountPacket columnCountPacket = new ColumnCountPacket(mysqlMessage);
+            columnCountPacket.read(bytes);
+            System.out.println("columnCount packet:"+columnCountPacket.calcPacketSize()+" "+columnCountPacket.columnCount);
+
+            ColumnDefinitionPacket columnDefinitionPacket = new ColumnDefinitionPacket(mysqlMessage);
+            for(int i=0;i<columnCountPacket.columnCount;i++){
+                columnDefinitionPacket.read(bytes);
+                System.out.println("cd[charset]:"+columnDefinitionPacket.charsetSet);
+                System.out.println("cd[table]: "+ new String(columnDefinitionPacket.table));
+                System.out.println("cd[name] :"+new String(columnDefinitionPacket.name));
+            }
+
+            ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(mysqlMessage,columnCountPacket.columnCount);
+            resultsetRowPacket.read(bytes);
+            System.out.println("packet id:"+resultsetRowPacket.packetId+" packet len:"+resultsetRowPacket.packetLength);
+//            for (byte[] col:resultsetRowPacket.columnValues){
+////                System.out.println("res:"+new String(col));
+////            }
+            for (byte b:resultsetRowPacket.columnBytes){
+                System.out.print((b)+",");
+            }
+            System.out.println();
+            System.out.println(new String(resultsetRowPacket.columnBytes));
+
+//            System.out.println(resultsetRowPacket.toString());
         }
-        System.out.println();
+
+//        System.out.println(resultsetRowPacket.columnCount);
+//        for (int i=0;i<resultsetRowPacket.columnValues.size();i++){
+//            System.out.println(new String(resultsetRowPacket.columnValues.get(i)));
+//        }
+
+//        System.out.println(resultsetRowPacket.toString());
         return buffer;
     }
 

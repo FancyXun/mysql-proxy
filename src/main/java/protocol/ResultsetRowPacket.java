@@ -20,6 +20,10 @@ public class ResultsetRowPacket extends MysqlPacket {
 	public int columnCount;
 	public List<byte[]> columnValues;
 
+	private MysqlMessage mm;
+
+	public byte[] columnBytes;
+
 	public ResultsetRowPacket() {
 
 	}
@@ -28,14 +32,21 @@ public class ResultsetRowPacket extends MysqlPacket {
 		this.columnCount = columnCount;
 	}
 
+	public ResultsetRowPacket(MysqlMessage mysqlMessage,int columnCount){
+
+		this.mm=mysqlMessage;
+		this.columnCount=columnCount;
+	}
+
 	@Override
 	public void read(byte[] data) {
-		MysqlMessage mm = new MysqlMessage(data);
+//		MysqlMessage mm = new MysqlMessage(data);
 		packetLength = mm.readUB3();
 		packetId = mm.read();
-		for (int i = 0; i < columnCount; i++) {
-			columnValues.add(mm.readBytesWithLength());
-		}
+//		for (int i = 0; i < columnCount; i++) {
+//			columnValues.add(mm.readBytesWithLength());
+//		}
+		columnBytes = mm.readBytes();
 	}
 
 	@Override

@@ -19,7 +19,7 @@ public class MysqlProxyServer {
     public static class MysqlProxyServerVerticle extends AbstractVerticle {
         private final int port = 43306;
         private final int mysql_port = 3306;
-        private final String mysqlHost = "192.168.51.170";
+        private final String mysqlHost = "192.168.51.158";
         @Override
         public void start() throws Exception {
             NetServer netServer = vertx.createNetServer();//创建代理服务器

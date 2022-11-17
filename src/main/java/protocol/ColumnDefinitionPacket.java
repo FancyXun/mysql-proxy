@@ -34,8 +34,14 @@ public class ColumnDefinitionPacket extends MysqlPacket {
 	public byte[] filler = FILLER;
 	public byte[] defaultValues;
 
+	private MysqlMessage mm;
+
+
+	public  ColumnDefinitionPacket(MysqlMessage mysqlMessage){
+		this.mm=mysqlMessage;
+	}
 	public void read(byte[] data) {
-		MysqlMessage mm = new MysqlMessage(data);
+//		MysqlMessage mm = new MysqlMessage(data);
 		this.packetLength = mm.readUB3();
 		this.packetId = mm.read();
 		this.catalog = mm.readBytesWithLength();
@@ -51,9 +57,9 @@ public class ColumnDefinitionPacket extends MysqlPacket {
 		this.flags = mm.readUB2();
 		this.decimals = mm.read();
 		this.filler = mm.readBytes(2);
-		if (mm.hasRemaining()) {
-			this.defaultValues = mm.readBytesWithLength();
-		}
+//		if (mm.hasRemaining()) {
+//			this.defaultValues = mm.readBytesWithLength();
+//		}
 	}
 
 	@Override
