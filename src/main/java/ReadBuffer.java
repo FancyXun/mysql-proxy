@@ -10,6 +10,7 @@ import protocol.MysqlMessage;
 import protocol.ColumnCountPacket;
 import protocol.ColumnDefinitionPacket;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -128,6 +129,7 @@ public class ReadBuffer {
                 System.out.print((bytes[i])+" ");
             }
             System.out.println();
+            try{
             MysqlMessage mysqlMessage = new MysqlMessage(bytes);
             ColumnCountPacket columnCountPacket = new ColumnCountPacket(mysqlMessage);
             columnCountPacket.read(bytes);
@@ -151,10 +153,50 @@ public class ReadBuffer {
                 System.out.print((b)+",");
             }
             System.out.println();
-            System.out.println(new String(resultsetRowPacket.columnBytes));
+//            System.out.println(new String(resultsetRowPacket.columnBytes));
+            byte[] resPac = resultsetRowPacket.columnBytes;
+            int len = resPac[0];
+            int cursor = 1;
+            int column_cur = 0;
+            ArrayList<String> arrayList = new ArrayList<>();
+            for (int i = 1 ; i < resPac.length; i++ ){
+                if (len < 0 ){
+                    break;
+                }
+                byte[] bytes1 = new byte[len];
 
+                for (int j = 0; j < len; j++){
+                    bytes1[j] = resPac[cursor + j];
+                }
+                column_cur +=1;
+
+                if (column_cur > columnCountPacket.columnCount){
+                    cursor = cursor + 3;
+                    len = resPac[cursor];
+                    cursor = cursor + 1;
+                    column_cur = 0;
+                    System.out.println("row: ");
+                    for (String s: arrayList){
+                        System.out.print(s + " ");
+                    }
+                    System.out.println();
+                    arrayList.clear();
+                    continue;
+                }
+                else{
+                    cursor = cursor + len;
+                    len = resPac[cursor];
+                    cursor = cursor + 1;
+                    arrayList.add(new String(bytes1));
+//                    System.out.println(new String(bytes1) );
+                }
+            }
 //            System.out.println(resultsetRowPacket.toString());
+            } catch (Exception e) {
+                System.out.println(e);
+            }
         }
+
 
 //        System.out.println(resultsetRowPacket.columnCount);
 //        for (int i=0;i<resultsetRowPacket.columnValues.size();i++){
