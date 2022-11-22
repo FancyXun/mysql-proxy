@@ -110,16 +110,6 @@ public class ReadBuffer {
 //            System.out.print((bytes[i] & 0xFF) + " " );
 //        }
         System.out.println(bytes[0]);
-//        switch (bytes[0]){
-//            case 0:
-//                System.out.println("ok packet");
-//                break;
-//            case 1&0xFF:
-//                System.out.println("Error packet");
-//                break;
-//            default:
-//                System.out.println("data result packet");
-//        }
         if (bytes[0]==1){
             System.out.println("data packet:");
 //            System.out.println(bytes);
@@ -135,23 +125,28 @@ public class ReadBuffer {
 
             ColumnDefinitionPacket columnDefinitionPacket = new ColumnDefinitionPacket(mysqlMessage);
             for(int i=0;i<columnCountPacket.columnCount;i++){
-                columnDefinitionPacket.read(bytes);
+                try {
+                    columnDefinitionPacket.read(bytes);
+                }catch (Exception e){
+                    System.out.println(" error data position:"+ mysqlMessage.position());
+                    break;
+                }
+
                 System.out.println("cd[charset]:"+columnDefinitionPacket.charsetSet);
                 System.out.println("cd[table]: "+ new String(columnDefinitionPacket.table));
                 System.out.println("cd[name] :"+new String(columnDefinitionPacket.name));
             }
-
             ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(mysqlMessage,columnCountPacket.columnCount);
             resultsetRowPacket.read(bytes);
             System.out.println("packet id:"+resultsetRowPacket.packetId+" packet len:"+resultsetRowPacket.packetLength);
-//            for (byte[] col:resultsetRowPacket.columnValues){
-////                System.out.println("res:"+new String(col));
-////            }
-            for (byte b:resultsetRowPacket.columnBytes){
-                System.out.print((b)+",");
+            for (byte[] col:resultsetRowPacket.columnValues){
+                System.out.println("res:"+new String(col));
             }
+//            for (byte b:resultsetRowPacket.columnBytes){
+//                System.out.print((b)+",");
+//            }
             System.out.println();
-            System.out.println(new String(resultsetRowPacket.columnBytes));
+//            System.out.println(new String(resultsetRowPacket.columnBytes));
 
 //            System.out.println(resultsetRowPacket.toString());
         }

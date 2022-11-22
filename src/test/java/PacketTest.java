@@ -17,6 +17,7 @@ public class PacketTest {
                 {46,0,0,4,3,100,101,102,0,0,0,24,99,104,97,114,97,99,116,101,114,95,115,101,116,95,99,111,110,110,101,99,116,105,111,110,0,12,33,0,12,0,0,0,-3,0,0,31,0,0},
                 {43,0,0,5,3,100,101,102,0,0,0,21,99,104,97,114,97,99,116,101,114,95,115,101,116,95,114,101,115,117,108,116,115,0,12,33,0,12,0,0,0,-3,0,0,31,0,0},
                 {44,0,0,12,3,100,101,102,0,0,0,22,108,111,119,101,114,95,99,97,115,101,95,116,97,98,108,101,95,110,97,109,101,115,0,12,63,0,21,0,0,0,8,-96,0,0,0,0},
+                {}
         };
         for (byte[] packet:packets) {
             MysqlMessage mysqlMessage = new MysqlMessage(packet);
@@ -34,7 +35,11 @@ public class PacketTest {
             MysqlMessage mysqlMessage = new MysqlMessage(packet);
             ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(mysqlMessage,5);
             resultsetRowPacket.read(packet);
-            System.out.println(resultsetRowPacket.columnBytes);
+            for (byte[] b:resultsetRowPacket.columnValues){
+                System.out.println(new String(b));
+            }
+
+//            System.out.println(resultsetRowPacket.columnBytes);
         }
 
     }

@@ -3,6 +3,7 @@ package protocol;
 import protocol.util.BufferUtil;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,7 +14,7 @@ import java.util.List;
  * <pre><b>email: </b>849586227@qq.com</pre>
  * <pre><b>blog: </b>http://blog.csdn.net/wangyangzhizhou</pre>
  * @version 1.0
- * @see http://dev.mysql.com/doc/internals/en/com-query-response.html#text-resultset
+ *  http://dev.mysql.com/doc/internals/en/com-query-response.html#text-resultset
  */
 public class ResultsetRowPacket extends MysqlPacket {
 	private static final byte NULL_MARK = (byte) 251;
@@ -36,6 +37,7 @@ public class ResultsetRowPacket extends MysqlPacket {
 
 		this.mm=mysqlMessage;
 		this.columnCount=columnCount;
+		this.columnValues = new ArrayList<>();
 	}
 
 	@Override
@@ -43,10 +45,19 @@ public class ResultsetRowPacket extends MysqlPacket {
 //		MysqlMessage mm = new MysqlMessage(data);
 		packetLength = mm.readUB3();
 		packetId = mm.read();
-//		for (int i = 0; i < columnCount; i++) {
-//			columnValues.add(mm.readBytesWithLength());
-//		}
-		columnBytes = mm.readBytes();
+		byte[] v = {};
+		for (int i = 0; i < columnCount; i++) {
+			try {
+				v= mm.readBytesWithLength();
+				columnValues.add(v);
+			}catch (Exception e){
+				System.out.println("column: "+i+" got an error");
+				System.out.println("mm position:" +mm.position());
+				System.out.println(e.toString());
+			}
+
+		}
+//		columnBytes = mm.readBytes();
 	}
 
 	@Override
