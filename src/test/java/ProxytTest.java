@@ -20,7 +20,8 @@ public class ProxytTest {
             Connection conn = DriverManager.getConnection(url, user, password);//url为代理服务器的地址
 //            PreparedStatement pst = (PreparedStatement) conn.prepareStatement("select * from table_329c4e327d415c112139e3a435a71854 limit 1 ;");//准备执行语句
 //            PreparedStatement pst = (PreparedStatement) conn.prepareStatement("select 1,2,3,4,5;");//准//////////////////备执行语句
-            PreparedStatement pst = (PreparedStatement) conn.prepareStatement("select repeat('a',2000) as x;");//准备执行语句
+            String sql="select * from table_4b40c30d3e00bf905b2e5ec984b5ad96;";
+            PreparedStatement pst = (PreparedStatement) conn.prepareStatement(sql);//准备执行语句
 
             ResultSet resultSet = pst.executeQuery();
             while (resultSet.next()) {
