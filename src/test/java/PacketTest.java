@@ -1,3 +1,4 @@
+import protocol.ColumnCountPacket;
 import protocol.ColumnDefinitionPacket;
 import protocol.MysqlMessage;
 import protocol.ResultsetRowPacket;
@@ -6,8 +7,8 @@ public class PacketTest {
 
     public static void main(String[] args){
 //       testDefineColumnPackets();
-        testResultPackets();
-
+//        testResultPackets();
+        testPacket();
     }
 
     public static void testDefineColumnPackets() {
@@ -42,6 +43,29 @@ public class PacketTest {
 //            System.out.println(resultsetRowPacket.columnBytes);
         }
 
+    }
+
+    public  static void testPacket() {
+        byte[][] packets = {
+                {1,0,0,1,2,44,0,0,2,3,100,101,102,6,116,101,115,116,100,98,6,116,101,115,116,95,48,6,116,101,115,116,95,48,2,105,100,2,105,100,12,63,0,11,0,0,0,3,3,80,0,0,0,48,0,0,3,3,100,101,102,6,116,101,115,116,100,98,6,116,101,115,116,95,48,6,116,101,115,116,95,48,4,110,97,109,101,4,110,97,109,101,12,8,0,0,1,0,0,-3,0,0,0,0,0,7,0,0,4,1,49,4,107,105,110,103,3,0,0,5,1,50,-5,3,0,0,6,1,51,-5,7,0,0,7,-2,0,0,34,0,0,0},
+        };
+        MysqlMessage mm = new MysqlMessage(packets[0]);
+        ColumnCountPacket cc = new ColumnCountPacket(mm);
+        cc.read(packets[0]);
+        System.out.println("columns:"+cc.columnCount);
+        for (int i =0 ;i<cc.columnCount;i++){
+            ColumnDefinitionPacket columnDefinitionPacket = new ColumnDefinitionPacket(mm);
+            columnDefinitionPacket.read(packets[0]);
+            System.out.println("cd[name]"+new String(columnDefinitionPacket.name));
+            System.out.println("cd[table]"+new String(columnDefinitionPacket.table));
+        }
+        for(int i=0;i<cc.columnCount;i++){
+            ResultsetRowPacket rr = new ResultsetRowPacket(mm,cc.columnCount);
+            rr.read(packets[0]);
+            for (byte[] b:rr.columnValues){
+                System.out.println(new String(b));
+            }
+        }
     }
 
 }

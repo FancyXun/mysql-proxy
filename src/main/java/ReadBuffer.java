@@ -115,7 +115,7 @@ public class ReadBuffer {
 //            System.out.println(bytes);
             for (int i = 0 ;i <bytes.length; i++){
 //                System.out.print((bytes[i] & 0xFF) + " " );
-                System.out.print((bytes[i])+" ");
+                System.out.print((bytes[i])+",");
             }
             System.out.println();
             MysqlMessage mysqlMessage = new MysqlMessage(bytes);
@@ -142,9 +142,9 @@ public class ReadBuffer {
             for (byte[] col:resultsetRowPacket.columnValues){
                 System.out.println("res:"+new String(col));
             }
-//            for (byte b:resultsetRowPacket.columnBytes){
-//                System.out.print((b)+",");
-//            }
+            for (byte b:resultsetRowPacket.columnBytes){
+                System.out.print((b)+",");
+            }
             System.out.println();
 //            System.out.println(new String(resultsetRowPacket.columnBytes));
 

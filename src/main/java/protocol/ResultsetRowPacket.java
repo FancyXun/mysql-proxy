@@ -57,7 +57,7 @@ public class ResultsetRowPacket extends MysqlPacket {
 			}
 
 		}
-//		columnBytes = mm.readBytes();
+		columnBytes = mm.readBytes();
 	}
 
 	@Override
