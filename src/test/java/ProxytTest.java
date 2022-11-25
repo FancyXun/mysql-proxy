@@ -21,7 +21,9 @@ public class ProxytTest {
 //            PreparedStatement pst = (PreparedStatement) conn.prepareStatement("select * from table_329c4e327d415c112139e3a435a71854 limit 1 ;");//准备执行语句
 //            PreparedStatement pst = (PreparedStatement) conn.prepareStatement("select 1,2,3,4,5;");//准//////////////////备执行语句
 //            String sql="select * from test_0;";
-            String sql  = "select repeat('a',2000) as x;";
+//            String sql  = "select repeat('a',2000) as x;";
+            String sql  = "select 1,'x';";
+
             PreparedStatement pst = (PreparedStatement) conn.prepareStatement(sql);//准备执行语句
 
             ResultSet resultSet = pst.executeQuery();

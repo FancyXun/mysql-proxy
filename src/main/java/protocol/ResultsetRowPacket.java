@@ -21,6 +21,7 @@ public class ResultsetRowPacket extends MysqlPacket {
 	public int columnCount;
 	public List<byte[]> columnValues;
 
+
 	private MysqlMessage mm;
 
 	public byte[] columnBytes;
@@ -57,7 +58,8 @@ public class ResultsetRowPacket extends MysqlPacket {
 			}
 
 		}
-		columnBytes = mm.readBytes();
+
+//		columnBytes = mm.readBytes();
 	}
 
 	@Override
@@ -90,4 +92,12 @@ public class ResultsetRowPacket extends MysqlPacket {
 		return "MySQL Resultset Row Packet";
 	}
 
+	@Override
+	public String toString() {
+		String s="";
+		for (byte[] col:columnValues){
+			s= s+new String(col)+",";
+		}
+		return s;
+	}
 }

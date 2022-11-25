@@ -11,6 +11,7 @@ import protocol.ColumnCountPacket;
 import protocol.ColumnDefinitionPacket;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -110,46 +111,48 @@ public class ReadBuffer {
 //            System.out.print((bytes[i] & 0xFF) + " " );
 //        }
         System.out.println(bytes[0]);
-        if (bytes[0]==1){
+        if (bytes[0]==1) {
             System.out.println("data packet:");
 //            System.out.println(bytes);
-            for (int i = 0 ;i <bytes.length; i++){
+            for (int i = 0; i < bytes.length; i++) {
 //                System.out.print((bytes[i] & 0xFF) + " " );
-                System.out.print((bytes[i])+",");
+                System.out.print((bytes[i]) + ",");
             }
             System.out.println();
             MysqlMessage mysqlMessage = new MysqlMessage(bytes);
             ColumnCountPacket columnCountPacket = new ColumnCountPacket(mysqlMessage);
             columnCountPacket.read(bytes);
-            System.out.println("columnCount packet:"+columnCountPacket.calcPacketSize()+" "+columnCountPacket.columnCount);
-
             ColumnDefinitionPacket columnDefinitionPacket = new ColumnDefinitionPacket(mysqlMessage);
-            for(int i=0;i<columnCountPacket.columnCount;i++){
+            for (int i = 0; i < columnCountPacket.columnCount; i++) {
                 try {
                     columnDefinitionPacket.read(bytes);
-                }catch (Exception e){
-                    System.out.println(" error data position:"+ mysqlMessage.position());
+                } catch (Exception e) {
+                    System.out.println(" error data position:" + mysqlMessage.position());
                     break;
                 }
 
-                System.out.println("cd[charset]:"+columnDefinitionPacket.charsetSet);
-                System.out.println("cd[table]: "+ new String(columnDefinitionPacket.table));
-                System.out.println("cd[name] :"+new String(columnDefinitionPacket.name));
+                System.out.println("cd[charset]:" + columnDefinitionPacket.charsetSet);
+                System.out.println("cd[table]: " + new String(columnDefinitionPacket.table));
+                System.out.println("cd[name] :" + new String(columnDefinitionPacket.name));
             }
-            ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(mysqlMessage,columnCountPacket.columnCount);
-            resultsetRowPacket.read(bytes);
-            System.out.println("packet id:"+resultsetRowPacket.packetId+" packet len:"+resultsetRowPacket.packetLength);
-            for (byte[] col:resultsetRowPacket.columnValues){
-                System.out.println("res:"+new String(col));
+            for (;mysqlMessage.position() < mysqlMessage.length();) {
+                try{
+                    ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(mysqlMessage, columnCountPacket.columnCount);
+                    resultsetRowPacket.read(bytes);
+                    System.out.println("packet id:" + resultsetRowPacket.packetId + " packet len:" + resultsetRowPacket.packetLength);
+                    System.out.println(resultsetRowPacket.toString());
+                }catch (Exception e){
+                    System.out.println(e.getMessage());
+                }
+
             }
-            for (byte b:resultsetRowPacket.columnBytes){
-                System.out.print((b)+",");
-            }
+
             System.out.println();
+        }
 //            System.out.println(new String(resultsetRowPacket.columnBytes));
 
 //            System.out.println(resultsetRowPacket.toString());
-        }
+
 
 //        System.out.println(resultsetRowPacket.columnCount);
 //        for (int i=0;i<resultsetRowPacket.columnValues.size();i++){
