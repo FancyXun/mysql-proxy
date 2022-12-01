@@ -24,14 +24,18 @@ public class ResultsetRowPacket extends MysqlPacket {
 
 	private MysqlMessage mm;
 
-	public byte[] columnBytes;
+//	public byte[] columnBytes;
 
 	public ResultsetRowPacket() {
 
 	}
 
-	public ResultsetRowPacket(int columnCount) {
+	public ResultsetRowPacket(int columnCount,List<byte[]> columnValues, byte packetId) {
+
 		this.columnCount = columnCount;
+		this.columnValues = columnValues;
+		this.packetId=packetId;
+
 	}
 
 	public ResultsetRowPacket(MysqlMessage mysqlMessage,int columnCount){

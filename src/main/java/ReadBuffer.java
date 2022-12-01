@@ -1,5 +1,6 @@
 import com.alibaba.fastjson.JSON;
 //import com.sun.org.apache.xpath.internal.operations.String;
+import dao.QueryResult;
 import dao.SQLInfo;
 import io.vertx.core.buffer.Buffer;
 
@@ -10,6 +11,7 @@ import protocol.MysqlMessage;
 import protocol.ColumnCountPacket;
 import protocol.ColumnDefinitionPacket;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -163,8 +165,32 @@ public class ReadBuffer {
 //        }
 
 //        System.out.println(resultsetRowPacket.toString());
+//        QueryResult queryResult = new QueryResult()
+        writeBuffer();
         return buffer;
     }
+
+    public static ByteBuffer writeBufferBytes(QueryResult queryResult,Buffer buffer) {
+        int columnCount = queryResult.getColumnDefinition().size();
+        ColumnCountPacket countPacket = new ColumnCountPacket(columnCount,(byte)0);
+        ByteBuffer byteBuffer = ByteBuffer.wrap(buffer.getBytes());
+        countPacket.write(byteBuffer);
+        int packetId =1;
+        for (String s:queryResult.getColumnDefinition()){
+            ColumnDefinitionPacket columnDefinitionPacket = new ColumnDefinitionPacket(s,(byte)packetId);
+            packetId++;
+            columnDefinitionPacket.write(byteBuffer);
+        }
+        for (List<byte[]> row:queryResult.getRows()){
+            ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(columnCount,row,(byte)packetId);
+            packetId++;
+            resultsetRowPacket.write(byteBuffer);
+        }
+
+        return byteBuffer;
+    }
+
+
 
 
 }
