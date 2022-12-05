@@ -11,7 +11,9 @@ import protocol.MysqlMessage;
 import protocol.ColumnCountPacket;
 import protocol.ColumnDefinitionPacket;
 
+
 import java.nio.ByteBuffer;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -118,6 +120,7 @@ public class ReadBuffer {
                 System.out.print((bytes[i]) + ",");
             }
             System.out.println();
+            try{
             MysqlMessage mysqlMessage = new MysqlMessage(bytes);
             ColumnCountPacket columnCountPacket = new ColumnCountPacket(mysqlMessage);
             columnCountPacket.read(bytes);
@@ -150,13 +153,10 @@ public class ReadBuffer {
                     rows.add(resultsetRowPacket.toString());
                 }
             }
-
-            System.out.println(columns);
-            System.out.println(rows);
-        }
 //            System.out.println(new String(resultsetRowPacket.columnBytes));
 
 //            System.out.println(resultsetRowPacket.toString());
+
 
 
 //        System.out.println(resultsetRowPacket.columnCount);
