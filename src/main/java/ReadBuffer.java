@@ -120,53 +120,40 @@ public class ReadBuffer {
                 System.out.print((bytes[i]) + ",");
             }
             System.out.println();
-            try{
-            MysqlMessage mysqlMessage = new MysqlMessage(bytes);
-            ColumnCountPacket columnCountPacket = new ColumnCountPacket(mysqlMessage);
-            columnCountPacket.read(bytes);
-            ColumnDefinitionPacket columnDefinitionPacket = new ColumnDefinitionPacket(mysqlMessage);
-            List<String> columns = new ArrayList<>();
-            List<String> rows = new ArrayList<>();
-            for (int i = 0; i < columnCountPacket.columnCount; i++) {
-                try {
-                    columnDefinitionPacket.read(bytes);
-                } catch (Exception e) {
-                    System.out.println(" error data position:" + mysqlMessage.position());
-                    break;
-                }
-                columns.add(new String(columnDefinitionPacket.name));
+
+                MysqlMessage mysqlMessage = new MysqlMessage(bytes);
+                ColumnCountPacket columnCountPacket = new ColumnCountPacket(mysqlMessage);
+                columnCountPacket.read(bytes);
+                ColumnDefinitionPacket columnDefinitionPacket = new ColumnDefinitionPacket(mysqlMessage);
+                List<String> columns = new ArrayList<>();
+                List<String> rows = new ArrayList<>();
+                for (int i = 0; i < columnCountPacket.columnCount; i++) {
+                    try {
+                        columnDefinitionPacket.read(bytes);
+                    } catch (Exception e) {
+                        System.out.println(" error data position:" + mysqlMessage.position());
+                        break;
+                    }
+                    columns.add(new String(columnDefinitionPacket.name));
 //                System.out.println("cd[charset]:" + columnDefinitionPacket.charsetSet);
 //                System.out.println("cd[table]: " + new String(columnDefinitionPacket.table));
 //                System.out.println("cd[name] :" + new String(columnDefinitionPacket.name));
-            }
-
-            for (;mysqlMessage.position() < mysqlMessage.length();) {
-                ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(mysqlMessage, columnCountPacket.columnCount);
-                try{
-                    resultsetRowPacket.read(bytes);
-                    System.out.println("packet id:" + resultsetRowPacket.packetId + " packet len:" + resultsetRowPacket.packetLength);
-                    System.out.println(resultsetRowPacket.toString());
-                }catch (Exception e){
-                    System.out.println(e.getMessage());
                 }
-                if(resultsetRowPacket.columnValues.size()==columnCountPacket.columnCount){
-                    rows.add(resultsetRowPacket.toString());
+
+                for (; mysqlMessage.position() < mysqlMessage.length(); ) {
+                    ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(mysqlMessage, columnCountPacket.columnCount);
+                    try {
+                        resultsetRowPacket.read(bytes);
+                        System.out.println("packet id:" + resultsetRowPacket.packetId + " packet len:" + resultsetRowPacket.packetLength);
+                        System.out.println(resultsetRowPacket.toString());
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    if (resultsetRowPacket.columnValues.size() == columnCountPacket.columnCount) {
+                        rows.add(resultsetRowPacket.toString());
+                    }
                 }
             }
-//            System.out.println(new String(resultsetRowPacket.columnBytes));
-
-//            System.out.println(resultsetRowPacket.toString());
-
-
-
-//        System.out.println(resultsetRowPacket.columnCount);
-//        for (int i=0;i<resultsetRowPacket.columnValues.size();i++){
-//            System.out.println(new String(resultsetRowPacket.columnValues.get(i)));
-//        }
-
-//        System.out.println(resultsetRowPacket.toString());
-//        QueryResult queryResult = new QueryResult()
-//        writeBuffer();
         return buffer;
     }
 
