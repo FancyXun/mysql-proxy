@@ -166,7 +166,7 @@ public class ReadBuffer {
 
 //        System.out.println(resultsetRowPacket.toString());
 //        QueryResult queryResult = new QueryResult()
-        writeBuffer();
+//        writeBuffer();
         return buffer;
     }
 

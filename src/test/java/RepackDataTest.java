@@ -22,6 +22,7 @@ public class RepackDataTest {
         for (byte t:buffer.array()){
             System.out.print((t&0xff)+" ");
         }
+        System.out.println();
         List<List<byte[]>> rows = generateRowData(3,4);
         List<String> columnDefs = new ArrayList<>();
         columnDefs.add("col1");
