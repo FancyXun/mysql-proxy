@@ -40,6 +40,11 @@ public class ColumnDefinitionPacket extends MysqlPacket {
 	public  ColumnDefinitionPacket(MysqlMessage mysqlMessage){
 		this.mm=mysqlMessage;
 	}
+
+	public ColumnDefinitionPacket(String name,byte packetId){
+		this.packetId=packetId;
+		this.name = name.getBytes();
+	}
 	public void read(byte[] data) {
 //		MysqlMessage mm = new MysqlMessage(data);
 		this.packetLength = mm.readUB3();

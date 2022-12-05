@@ -1,5 +1,6 @@
 import com.alibaba.fastjson.JSON;
 //import com.sun.org.apache.xpath.internal.operations.String;
+import dao.QueryResult;
 import dao.SQLInfo;
 import io.vertx.core.buffer.Buffer;
 
@@ -10,8 +11,12 @@ import protocol.MysqlMessage;
 import protocol.ColumnCountPacket;
 import protocol.ColumnDefinitionPacket;
 
+
+import java.nio.ByteBuffer;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -20,8 +25,6 @@ public class ReadBuffer {
     public static Buffer readFromBuffer(SQLInfo sqlInfo, Buffer buffer) {
 
         byte[] bytes = buffer.getBytes();
-
-
 
         if (bytes.length > 6){
 //            System.out.println("hhh");
@@ -73,8 +76,6 @@ public class ReadBuffer {
             }
         }
 
-
-
         return buffer;
 
     }
@@ -111,91 +112,51 @@ public class ReadBuffer {
 //            System.out.print((bytes[i] & 0xFF) + " " );
 //        }
         System.out.println(bytes[0]);
-//        switch (bytes[0]){
-//            case 0:
-//                System.out.println("ok packet");
-//                break;
-//            case 1&0xFF:
-//                System.out.println("Error packet");
-//                break;
-//            default:
-//                System.out.println("data result packet");
-//        }
-        if (bytes[0]==1){
+        if (bytes[0]==1) {
             System.out.println("data packet:");
 //            System.out.println(bytes);
-            for (int i = 0 ;i <bytes.length; i++){
+            for (int i = 0; i < bytes.length; i++) {
 //                System.out.print((bytes[i] & 0xFF) + " " );
-                System.out.print((bytes[i])+" ");
+                System.out.print((bytes[i]) + ",");
             }
             System.out.println();
             try{
             MysqlMessage mysqlMessage = new MysqlMessage(bytes);
             ColumnCountPacket columnCountPacket = new ColumnCountPacket(mysqlMessage);
             columnCountPacket.read(bytes);
-            System.out.println("columnCount packet:"+columnCountPacket.calcPacketSize()+" "+columnCountPacket.columnCount);
-
             ColumnDefinitionPacket columnDefinitionPacket = new ColumnDefinitionPacket(mysqlMessage);
-            for(int i=0;i<columnCountPacket.columnCount;i++){
-                columnDefinitionPacket.read(bytes);
-                System.out.println("cd[charset]:"+columnDefinitionPacket.charsetSet);
-                System.out.println("cd[table]: "+ new String(columnDefinitionPacket.table));
-                System.out.println("cd[name] :"+new String(columnDefinitionPacket.name));
-            }
-
-            ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(mysqlMessage,columnCountPacket.columnCount);
-            resultsetRowPacket.read(bytes);
-            System.out.println("packet id:"+resultsetRowPacket.packetId+" packet len:"+resultsetRowPacket.packetLength);
-//            for (byte[] col:resultsetRowPacket.columnValues){
-////                System.out.println("res:"+new String(col));
-////            }
-            for (byte b:resultsetRowPacket.columnBytes){
-                System.out.print((b)+",");
-            }
-            System.out.println();
-//            System.out.println(new String(resultsetRowPacket.columnBytes));
-            byte[] resPac = resultsetRowPacket.columnBytes;
-            int len = resPac[0];
-            int cursor = 1;
-            int column_cur = 0;
-            ArrayList<String> arrayList = new ArrayList<>();
-            for (int i = 1 ; i < resPac.length; i++ ){
-                if (len < 0 ){
+            List<String> columns = new ArrayList<>();
+            List<String> rows = new ArrayList<>();
+            for (int i = 0; i < columnCountPacket.columnCount; i++) {
+                try {
+                    columnDefinitionPacket.read(bytes);
+                } catch (Exception e) {
+                    System.out.println(" error data position:" + mysqlMessage.position());
                     break;
                 }
-                byte[] bytes1 = new byte[len];
+                columns.add(new String(columnDefinitionPacket.name));
+//                System.out.println("cd[charset]:" + columnDefinitionPacket.charsetSet);
+//                System.out.println("cd[table]: " + new String(columnDefinitionPacket.table));
+//                System.out.println("cd[name] :" + new String(columnDefinitionPacket.name));
+            }
 
-                for (int j = 0; j < len; j++){
-                    bytes1[j] = resPac[cursor + j];
+            for (;mysqlMessage.position() < mysqlMessage.length();) {
+                ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(mysqlMessage, columnCountPacket.columnCount);
+                try{
+                    resultsetRowPacket.read(bytes);
+                    System.out.println("packet id:" + resultsetRowPacket.packetId + " packet len:" + resultsetRowPacket.packetLength);
+                    System.out.println(resultsetRowPacket.toString());
+                }catch (Exception e){
+                    System.out.println(e.getMessage());
                 }
-                column_cur +=1;
-
-                if (column_cur > columnCountPacket.columnCount){
-                    cursor = cursor + 3;
-                    len = resPac[cursor];
-                    cursor = cursor + 1;
-                    column_cur = 0;
-                    System.out.println("row: ");
-                    for (String s: arrayList){
-                        System.out.print(s + " ");
-                    }
-                    System.out.println();
-                    arrayList.clear();
-                    continue;
-                }
-                else{
-                    cursor = cursor + len;
-                    len = resPac[cursor];
-                    cursor = cursor + 1;
-                    arrayList.add(new String(bytes1));
-//                    System.out.println(new String(bytes1) );
+                if(resultsetRowPacket.columnValues.size()==columnCountPacket.columnCount){
+                    rows.add(resultsetRowPacket.toString());
                 }
             }
+//            System.out.println(new String(resultsetRowPacket.columnBytes));
+
 //            System.out.println(resultsetRowPacket.toString());
-            } catch (Exception e) {
-                System.out.println(e);
-            }
-        }
+
 
 
 //        System.out.println(resultsetRowPacket.columnCount);
@@ -204,8 +165,32 @@ public class ReadBuffer {
 //        }
 
 //        System.out.println(resultsetRowPacket.toString());
+//        QueryResult queryResult = new QueryResult()
+//        writeBuffer();
         return buffer;
     }
+
+    public static ByteBuffer writeBufferBytes(QueryResult queryResult,Buffer buffer) {
+        int columnCount = queryResult.getColumnDefinition().size();
+        ColumnCountPacket countPacket = new ColumnCountPacket(columnCount,(byte)0);
+        ByteBuffer byteBuffer = ByteBuffer.wrap(buffer.getBytes());
+        countPacket.write(byteBuffer);
+        int packetId =1;
+        for (String s:queryResult.getColumnDefinition()){
+            ColumnDefinitionPacket columnDefinitionPacket = new ColumnDefinitionPacket(s,(byte)packetId);
+            packetId++;
+            columnDefinitionPacket.write(byteBuffer);
+        }
+        for (List<byte[]> row:queryResult.getRows()){
+            ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(columnCount,row,(byte)packetId);
+            packetId++;
+            resultsetRowPacket.write(byteBuffer);
+        }
+
+        return byteBuffer;
+    }
+
+
 
 
 }

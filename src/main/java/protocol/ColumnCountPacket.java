@@ -24,6 +24,11 @@ public class ColumnCountPacket extends MysqlPacket {
 		this.mm=mysqlMessage;
 	}
 
+	public ColumnCountPacket(int cc,byte packageId){
+		this.columnCount=cc;
+		this.packetId=packageId;
+	}
+
 	public void read(byte[] data) {
 //		MysqlMessage mm = new MysqlMessage(data);
 		this.packetLength = mm.readUB3();
