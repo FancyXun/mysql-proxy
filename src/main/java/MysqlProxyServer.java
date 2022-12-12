@@ -19,7 +19,7 @@ public class MysqlProxyServer {
     public static class MysqlProxyServerVerticle extends AbstractVerticle {
         private final int port = 43306;
         private final int mysql_port = 3306;
-        private final String mysqlHost = "127.0.0.1";
+        private final String mysqlHost = "192.168.51.158";
         @Override
         public void start() throws Exception {
             NetServer netServer = vertx.createNetServer();//创建代理服务器
@@ -69,8 +69,10 @@ public class MysqlProxyServer {
             });
             //当收到来自客户端的数据包时，转发给mysql目标服务器
             clientSocket.handler(buffer ->{
+
                     serverSocket.write(ReadBuffer.readFromBuffer(sqlInfo, buffer.copy()));
                     });
+            System.out.println(clientSocket);
             //当收到来自mysql目标服务器的数据包时，转发给客户端
             serverSocket.handler(buffer ->
                     clientSocket.write(ReadBuffer.readFromMysqlBuffer(buffer.copy()))
