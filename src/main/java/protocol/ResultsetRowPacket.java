@@ -59,6 +59,7 @@ public class ResultsetRowPacket extends MysqlPacket {
 				System.out.println("column: "+i+" got an error");
 				System.out.println("mm position:" +mm.position());
 				System.out.println(e.toString());
+				throw e;
 			}
 
 		}
