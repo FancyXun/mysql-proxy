@@ -82,9 +82,9 @@ public class ReadBuffer {
     }
 
     public static byte[] sqlConvert(SQLInfo sqlInfo, String sql){
-        String db = "dahua_yuanqu_test";
+        String db = "points";
         HashMap<String, String> headers = new HashMap<>(3);
-        String requestUrl = "http://localhost:8888/encrypt_sql1";
+        String requestUrl = "http://localhost:8888/encrypt_sql2";
         String jsonStr = "{\"db\": " +"\"" + db +"\"" + ", \"sql\": "  +"\""+ sql  + "\""+ "}";
         headers.put("content-type", "application/json");
         // 发送post请求
@@ -96,12 +96,13 @@ public class ReadBuffer {
 //        }
         new_sql = (String) mapTypes.get("encrypt_sql");
         String table = (String) mapTypes.get("table");
+        String id = (String) mapTypes.get("id");
         sqlInfo.setEnc_sql(new_sql);
         sqlInfo.setTable(table);
         sqlInfo.setSql(sql);
         sqlInfo.setDatabase(db);
         // 并接收返回结果
-        System.out.println("加密sql: " + new_sql + " table: "+ table);
+        System.out.println("加密sql: " + new_sql + " table: "+ table +  " id: " + id) ;
 
         return new_sql.getBytes();
     }
