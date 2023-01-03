@@ -1,8 +1,6 @@
 import com.alibaba.fastjson.JSON;
 //import com.sun.org.apache.xpath.internal.operations.String;
-import dao.BufferedQuery;
-import dao.QueryResult;
-import dao.SQLInfo;
+import dao.*;
 import io.vertx.core.buffer.Buffer;
 
 import protocol.QueryPacket;
@@ -85,26 +83,30 @@ public class ReadBuffer {
 
     public static byte[] sqlConvert(SQLInfo sqlInfo, String sql){
         String db = "dahua_yuanqu_test";
+        SQLDecryptRequest sqlDecryptRequest = new SQLDecryptRequest(db,sql);
 
-        String jsonStr = "{\"db\": " +"\"" + db +"\"" + ", \"sql\": "  +"\""+ sql  + "\""+ "}";
+        String jsonStr = JSON.toJSONString(sqlDecryptRequest);
 
         // 发送post请求
-        String new_sql = SQLConverter.sendPostWithJson(ENCRYPT_API, jsonStr);
+        String response = SQLConverter.sendPostWithJson(ENCRYPT_API, jsonStr);
 
-        Map mapTypes = JSON.parseObject(new_sql);
+//        Map mapTypes = JSON.parseObject(new_sql);
 //        for (Object obj : mapTypes.keySet()){
 //            System.out.println("key为："+obj+"值为："+mapTypes.get(obj));
 //        }
-        new_sql = (String) mapTypes.get("encrypt_sql");
-        String table = (String) mapTypes.get("table");
-        sqlInfo.setEnc_sql(new_sql);
-        sqlInfo.setTable(table);
-        sqlInfo.setSql(sql);
+        SQLResponse sqlResponse = JSON.parseObject(response,SQLResponse.class);
+//        new_sql = (String) mapTypes.get("encrypt_sql");
+//        String table = (String) mapTypes.get("table");
+//        sqlInfo.setEnc_sql(new_sql);
+        String queryId = sqlResponse.getData().getQueryId();
+        String querySQL = sqlResponse.getData().getQuerySQL();
+//        sqlInfo.setTable(table);
+        sqlInfo.setSql(querySQL);
         sqlInfo.setDatabase(db);
         // 并接收返回结果
-        System.out.println("加密sql: " + new_sql + " table: "+ table);
+        System.out.println("加密sql: " + querySQL + " queryId: "+ queryId);
 
-        return new_sql.getBytes();
+        return querySQL.getBytes();
     }
 
 

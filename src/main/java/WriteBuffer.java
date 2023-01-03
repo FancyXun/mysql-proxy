@@ -1,4 +1,5 @@
 import com.alibaba.fastjson.JSON;
+import dao.QueryRequest;
 import dao.QueryResponse;
 import dao.QueryResult;
 import io.vertx.core.buffer.Buffer;
@@ -34,7 +35,7 @@ public class WriteBuffer {
         if (bytes[0]==1) {
             QueryResult queryResult = readBytes(bytes);
             ByteBuffer byteBuffer = writeBufferBytes(reWriteQueryResult(queryResult,sql),buffer);
-            buffer.setBytes(0,byteBuffer);
+            buffer.setBytes(0,byteBuffer.array());
         }
 
     }
@@ -44,8 +45,9 @@ public class WriteBuffer {
      * @param queryResult
      */
 
-    public static QueryResult reWriteQueryResult(QueryResult queryResult,String sql){
-        String payload = queryResult.getJson();
+    public static QueryResult reWriteQueryResult(QueryResult queryResult,String queryId){
+        QueryRequest queryRequest = new QueryRequest(queryId,queryResult);
+        String payload = JSON.toJSONString(queryRequest);
         String response = SQLConverter.sendPostWithJson(DECRYPT_API,payload);
 
         return parseData(response);
