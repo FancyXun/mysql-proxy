@@ -53,11 +53,11 @@ public class RepackDataTest {
             packetId++;
             columnDefinitionPacket.write(byteBuffer);
         }
-        for (List<byte[]> row:queryResult.getRows()){
-            ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(columnCount,row,(byte)packetId);
-            packetId++;
-            resultsetRowPacket.write(byteBuffer);
-        }
+//        for (List<byte[]> row:queryResult.getRows()){
+//            ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(columnCount,row,(byte)packetId);
+//            packetId++;
+//            resultsetRowPacket.write(byteBuffer);
+//        }
         byte[] endBytes = {7,0,0,7,-2,0,0,34,0,0,0};
         endBytes[3]=(byte)(columnCount+queryResult.getRows().size()+2);
         byteBuffer.put(endBytes);

@@ -6,8 +6,10 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
 import java.util.HashMap;
 
 public class SQLConverter {
-    public static String sendPostWithJson(String url, String jsonStr, HashMap<String,String> headers) {
+    public static String sendPostWithJson(String url, String jsonStr) {
         // 返回的结果
+        HashMap<String, String> headers = new HashMap<>(3);
+        headers.put("content-type", "application/json");
         String jsonResult = "";
         try {
             HttpClient client = new HttpClient();
@@ -17,7 +19,6 @@ public class SQLConverter {
             client.getHttpConnectionManager().getParams().setSoTimeout(3*60*1000);
             client.getParams().setContentCharset("UTF-8");
             PostMethod postMethod = new PostMethod(url);
-
             postMethod.setRequestHeader("content-type", headers.get("content-type"));
 
             // 非空
