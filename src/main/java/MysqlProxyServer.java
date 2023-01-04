@@ -50,7 +50,7 @@ public class MysqlProxyServer {
     public static class MysqlProxyConnection {
         private final NetSocket clientSocket;
         private final NetSocket serverSocket;
-        private String sql;
+        private String queryId;
         SQLInfo sqlInfo = new SQLInfo();
         public MysqlProxyConnection(NetSocket clientSocket, NetSocket serverSocket) {
             this.clientSocket = clientSocket;
@@ -73,13 +73,13 @@ public class MysqlProxyServer {
             //当收到来自客户端的数据包时，转发给mysql目标服务器
             clientSocket.handler(buffer ->{
                     BufferedQuery bufferedQuery = ReadBuffer.readFromBuffer(sqlInfo,buffer.copy());
-                    this.sql =bufferedQuery.getSql();
+                    this.queryId =bufferedQuery.getQueryId();
                     serverSocket.write(bufferedQuery.getBuffer());
                     });
             System.out.println(clientSocket);
             //当收到来自mysql目标服务器的数据包时，转发给客户端
             serverSocket.handler(buffer ->
-                    clientSocket.write(WriteBuffer.readFromMysqlBuffer(buffer.copy(),this.sql))
+                    clientSocket.write(WriteBuffer.readFromMysqlBuffer(buffer.copy(),this.queryId))
             );
         }
         private void close() {

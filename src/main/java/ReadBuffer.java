@@ -28,13 +28,14 @@ public class ReadBuffer {
 
         byte[] bytes = buffer.getBytes();
         String sql = "";
-
+        SQLResponse sqlResponse = new SQLResponse();
         if (bytes.length > 6){
 //            System.out.println("hhh");
 
             if (bytes[4]==3){
 
                 QueryPacket queryPacket = new QueryPacket();
+
 
 //                System.out.println("mysql client DATA:  " + bytes.length);
 //                for (int i = 0 ;i <bytes.length; i++){
@@ -52,7 +53,8 @@ public class ReadBuffer {
                 if (bytes[5] == 0 ){ // mysql client
                     queryPacket.read1(bytes, 0);
                     sql = new String(queryPacket.message);
-                    byte [] enc_bytes = sqlConvert(sqlInfo, sql);
+                    sqlResponse = sqlConvert(sqlInfo,sql);
+                    byte [] enc_bytes = sqlResponse.getData().getQuerySQL().getBytes();
                     buffer.setBytes(3 + 1 + 1 + 1 + 1, enc_bytes);
                     buffer.setByte(0, (byte) ((enc_bytes.length + 3) & 0xff) );
                     buffer.setByte(1, (byte) ((enc_bytes.length + 3) >>> 8) );
@@ -62,7 +64,8 @@ public class ReadBuffer {
                 else { //jdbc
                     queryPacket.read1(bytes, 1);
                     sql = new String(queryPacket.message);
-                    byte [] enc_bytes = sqlConvert(sqlInfo, sql);
+                    sqlResponse = sqlConvert(sqlInfo,sql);
+                    byte [] enc_bytes = sqlResponse.getData().getQuerySQL().getBytes();
                     buffer.setBytes(3 + 1 + 1 , enc_bytes);
                     buffer.setByte(0, (byte) ((enc_bytes.length+1) & 0xff) );
                     buffer.setByte(1, (byte) ((enc_bytes.length+1) >>> 8) );
@@ -78,10 +81,10 @@ public class ReadBuffer {
 
             }
         }
-        return new BufferedQuery(buffer,sql);
+        return new BufferedQuery(buffer,sqlResponse.getData().getQueryId());
     }
 
-    public static byte[] sqlConvert(SQLInfo sqlInfo, String sql){
+    public static SQLResponse sqlConvert(SQLInfo sqlInfo, String sql){
         String db = "dahua_yuanqu_test";
         SQLDecryptRequest sqlDecryptRequest = new SQLDecryptRequest(db,sql);
 
@@ -94,19 +97,19 @@ public class ReadBuffer {
 //        for (Object obj : mapTypes.keySet()){
 //            System.out.println("key为："+obj+"值为："+mapTypes.get(obj));
 //        }
-        SQLResponse sqlResponse = JSON.parseObject(response,SQLResponse.class);
+        return JSON.parseObject(response,SQLResponse.class);
 //        new_sql = (String) mapTypes.get("encrypt_sql");
 //        String table = (String) mapTypes.get("table");
 //        sqlInfo.setEnc_sql(new_sql);
-        String queryId = sqlResponse.getData().getQueryId();
-        String querySQL = sqlResponse.getData().getQuerySQL();
-//        sqlInfo.setTable(table);
-        sqlInfo.setSql(querySQL);
-        sqlInfo.setDatabase(db);
+//        String queryId = sqlResponse.getData().getQueryId();
+//        String querySQL = sqlResponse.getData().getQuerySQL();
+////        sqlInfo.setTable(table);
+//        sqlInfo.setSql(querySQL);
+//        sqlInfo.setDatabase(db);
         // 并接收返回结果
-        System.out.println("加密sql: " + querySQL + " queryId: "+ queryId);
+//        System.out.println("加密sql: " + querySQL + " queryId: "+ queryId);
 
-        return querySQL.getBytes();
+//        return sqlResponse;
     }
 
 

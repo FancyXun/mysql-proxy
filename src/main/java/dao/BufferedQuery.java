@@ -4,11 +4,20 @@ import io.vertx.core.buffer.Buffer;
 
 public class BufferedQuery {
     private Buffer buffer;
-    private String sql;
 
-    public BufferedQuery(Buffer buffer, String sql) {
+    public String getQueryId() {
+        return queryId;
+    }
+
+    public void setQueryId(String queryId) {
+        this.queryId = queryId;
+    }
+
+    private String queryId;
+
+    public BufferedQuery(Buffer buffer, String queryId) {
         this.buffer = buffer;
-        this.sql = sql;
+        this.queryId = queryId;
     }
 
     public Buffer getBuffer() {
@@ -19,15 +28,6 @@ public class BufferedQuery {
         this.buffer = buffer;
     }
 
-
-
-    public String getSql() {
-        return sql;
-    }
-
-    public void setSql(String sql) {
-        this.sql = sql;
-    }
 
 
 }
