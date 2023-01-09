@@ -1,3 +1,4 @@
+import dao.SQLBuffer;
 import dao.SQLInfo;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
@@ -6,6 +7,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetSocket;
+
 
 /**
  * @author zhangxun
@@ -48,6 +50,7 @@ public class MysqlProxyServer {
     public static class MysqlProxyConnection {
         private final NetSocket clientSocket;
         private final NetSocket serverSocket;
+        public String queryId;
         SQLInfo sqlInfo = new SQLInfo();
         public MysqlProxyConnection(NetSocket clientSocket, NetSocket serverSocket) {
             this.clientSocket = clientSocket;
@@ -69,13 +72,17 @@ public class MysqlProxyServer {
             });
             //当收到来自客户端的数据包时，转发给mysql目标服务器
             clientSocket.handler(buffer ->{
-
-                    serverSocket.write(ReadBuffer.readFromBuffer(sqlInfo, buffer.copy()));
+                SQLBuffer buffer1 = ReadBuffer.readFromBuffer(sqlInfo, buffer.copy());
+                this.queryId=buffer1.queryId;
+                System.out.println(this.queryId);
+                    serverSocket.write(buffer1.buffer);
                     });
             System.out.println(clientSocket);
             //当收到来自mysql目标服务器的数据包时，转发给客户端
-            serverSocket.handler(buffer ->
-                    clientSocket.write(ReadBuffer.readFromMysqlBuffer(buffer.copy()))
+            serverSocket.handler(buffer ->{
+                System.out.println(this.queryId);
+                clientSocket.write(WriteBuffer.readFromMysqlBuffer(buffer.copy()));
+                    }
             );
         }
         private void close() {
