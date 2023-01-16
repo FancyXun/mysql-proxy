@@ -11,6 +11,7 @@ import java.util.Map;
 
 
 public class ReadBuffer {
+    private static String ENCRYPT_SQL_API ="http://localhost:8888/encrypt_sql2";
 
     public static SQLBuffer readFromBuffer(SQLInfo sqlInfo, Buffer buffer) {
 
@@ -73,16 +74,16 @@ public class ReadBuffer {
     }
 
     public static SQLConvertedData sqlConvert(SQLInfo sqlInfo, String sql){
-        String db = "points";
+//        String db = "points";
+        String db = "test";
         HashMap<String, String> headers = new HashMap<>(3);
-        String requestUrl = "http://localhost:8888/encrypt_sql1";
 //        String jsonStr = "{\"db\": " +"\"" + db +"\"" + ", \"sql\": "  +"\""+ sql  + "\""+ "}";
         SQLQueryRequest sqlQueryRequest = new SQLQueryRequest(sql,db);
         String jsonStr = JSON.toJSONString(sqlQueryRequest);
         headers.put("content-type", "application/json");
         // 发送post请求
-        String new_sql = SQLConverter.sendPostWithJson(requestUrl, jsonStr,headers);
-
+        String new_sql = SQLConverter.sendPostWithJson(ENCRYPT_SQL_API, jsonStr,headers);
+        System.out.println("sql encrypt response:"+new_sql);
 //        Map mapTypes = JSON.parseObject(new_sql);
 //        for (Object obj : mapTypes.keySet()){
 //            System.out.println("key为："+obj+"值为："+mapTypes.get(obj));
