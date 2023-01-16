@@ -1,3 +1,4 @@
+import dao.QueryBuffer;
 import dao.QueryResult;
 import io.vertx.core.buffer.Buffer;
 import protocol.ColumnCountPacket;
@@ -10,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WriteBuffer {
-    public static Buffer readFromMysqlBuffer(Buffer buffer) {
+    public static Buffer readFromMysqlBuffer(Buffer buffer,String queryId) {
         try {
-            rewriteBuffer(buffer);
+            rewriteBuffer(buffer,queryId);
         }catch (Exception e){
             System.out.println(e.getMessage());
             return buffer;
@@ -21,7 +22,7 @@ public class WriteBuffer {
 
     }
 
-    public static void rewriteBuffer(Buffer buffer) {
+    public static void rewriteBuffer(Buffer buffer,String queryId) {
         byte[] bytes = buffer.getBytes();
         System.out.println("MYSQL response DATA:  " + bytes.length);
         for (int i = 0 ;i <bytes.length; i++){
