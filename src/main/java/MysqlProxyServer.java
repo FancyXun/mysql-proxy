@@ -1,4 +1,3 @@
-import dao.QueryBuffer;
 import dao.SQLBuffer;
 import dao.SQLInfo;
 import io.vertx.core.AbstractVerticle;
@@ -82,7 +81,7 @@ public class MysqlProxyServer {
             //当收到来自mysql目标服务器的数据包时，转发给客户端
             serverSocket.handler(buffer ->{
                 System.out.println(this.queryId);
-                clientSocket.write(WriteBuffer.readFromMysqlBuffer(buffer.copy(),this.queryId));
+                clientSocket.write(WriteBuffer.reWrite(buffer.copy(),this.queryId));
                     }
             );
         }
