@@ -18,7 +18,7 @@ public class WriteBuffer {
     private static String DECRYPT_API = "http://localhost:8888/decrypt_data";
 
 
-    public static Buffer reWrite(Buffer buffer, String sql) {
+    public static Buffer reWrite(Buffer buffer, String queryId) {
         byte[] bytes = buffer.getBytes();
         printBytes("mysql response data:",bytes,false);
 //        System.out.println("queryId:"+sql);
@@ -26,7 +26,7 @@ public class WriteBuffer {
 //            return buffer;
 //        }
 //        try {
-//            reWriteBuffer(buffer,sql);
+//            reWriteBuffer(buffer,queryId);
 //        }catch (Exception e){
 //            System.out.println(e.getMessage());
 //            return buffer;
@@ -35,12 +35,12 @@ public class WriteBuffer {
 
     }
 
-    public static void reWriteBuffer(Buffer buffer,String sql) {
+    public static void reWriteBuffer(Buffer buffer,String queryId) {
         byte[] bytes = buffer.getBytes();
         printBytes("mysql response data:",bytes,true);
         if (bytes[0]==1) {
             QueryResult queryResult = readBytes(bytes);
-            ByteBuffer byteBuffer = writeBufferBytes(reWriteQueryResult(queryResult,sql),buffer);
+            ByteBuffer byteBuffer = writeBufferBytes(reWriteQueryResult(queryResult,queryId),buffer);
             buffer.setBytes(0,byteBuffer.array());
         }
 
