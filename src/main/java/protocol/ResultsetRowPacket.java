@@ -30,10 +30,14 @@ public class ResultsetRowPacket extends MysqlPacket {
 
 	}
 
-	public ResultsetRowPacket(int columnCount,List<byte[]> columnValues, byte packetId) {
+	public ResultsetRowPacket(int columnCount,List<String> columnValues, byte packetId) {
 
 		this.columnCount = columnCount;
-		this.columnValues = columnValues;
+		List<byte[]> columnBytes = new ArrayList<>();
+		for (String col:columnValues){
+			columnBytes.add(col.getBytes());
+		}
+		this.columnValues = columnBytes;
 		this.packetId=packetId;
 
 	}
@@ -104,5 +108,13 @@ public class ResultsetRowPacket extends MysqlPacket {
 			s= s+new String(col)+",";
 		}
 		return s;
+	}
+
+	public List<String> getColumnsString(){
+		List<String> cols = new ArrayList<>();
+		for (byte[] col:columnValues){
+			cols.add(new String(col));
+		}
+		return cols;
 	}
 }

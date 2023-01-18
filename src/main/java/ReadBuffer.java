@@ -77,10 +77,11 @@ public class ReadBuffer {
 //        String db = "points";
         String db = "test";
         HashMap<String, String> headers = new HashMap<>(3);
+        headers.put("content-type", "application/json");
 //        String jsonStr = "{\"db\": " +"\"" + db +"\"" + ", \"sql\": "  +"\""+ sql  + "\""+ "}";
         SQLQueryRequest sqlQueryRequest = new SQLQueryRequest(sql,db);
         String jsonStr = JSON.toJSONString(sqlQueryRequest);
-        headers.put("content-type", "application/json");
+
         // 发送post请求
         String new_sql = SQLConverter.sendPostWithJson(ENCRYPT_SQL_API, jsonStr,headers);
         System.out.println("sql encrypt response:"+new_sql);

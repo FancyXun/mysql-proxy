@@ -23,7 +23,7 @@ public class RepackDataTest {
 //            System.out.print((t&0xff)+" ");
 //        }
 //        System.out.println();
-        List<List<byte[]>> rows = generateRowData(3,4);
+        List<List<String>> rows = generateRowData(3,4);
         List<String> columnDefs = new ArrayList<>();
         columnDefs.add("col1");
         columnDefs.add("col2");
@@ -53,7 +53,7 @@ public class RepackDataTest {
             packetId++;
             columnDefinitionPacket.write(byteBuffer);
         }
-        for (List<byte[]> row:queryResult.getRows()){
+        for (List<String> row:queryResult.getRows()){
             ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(columnCount,row,(byte)packetId);
             packetId++;
             resultsetRowPacket.write(byteBuffer);
@@ -64,12 +64,25 @@ public class RepackDataTest {
         return byteBuffer;
     }
 
-    public static List<List<byte[]>> generateRowData(int col,int row){
+    public static List<List<byte[]>> generateRowBytesData(int col,int row){
         List<List<byte[]>> res = new ArrayList<>();
         for(int i=0;i<row;i++){
             List<byte[]> tempRow = new ArrayList<>();
             for(int j=0;j<col;j++){
                 byte[] colx =new byte[]{(byte) (i*col+j+48)};
+                tempRow.add(colx);
+            }
+            res.add(tempRow);
+        }
+        return res;
+    }
+
+    public static List<List<String>> generateRowData(int col,int row){
+        List<List<String>> res = new ArrayList<>();
+        for(int i=0;i<row;i++){
+            List<String> tempRow = new ArrayList<>();
+            for(int j=0;j<col;j++){
+                String colx =i*col+j+48+"";
                 tempRow.add(colx);
             }
             res.add(tempRow);

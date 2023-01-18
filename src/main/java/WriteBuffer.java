@@ -10,6 +10,7 @@ import protocol.ResultsetRowPacket;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,26 +22,31 @@ public class WriteBuffer {
     public static Buffer reWrite(Buffer buffer, String queryId) {
         byte[] bytes = buffer.getBytes();
         printBytes("mysql response data:",bytes,false);
-//        System.out.println("queryId:"+sql);
-//        if(sql==null){
-//            return buffer;
-//        }
-//        try {
-//            reWriteBuffer(buffer,queryId);
-//        }catch (Exception e){
-//            System.out.println(e.getMessage());
-//            return buffer;
-//        }
+        System.out.println("queryId:"+queryId);
+        if(queryId==null){
+            return buffer;
+        }
+        try {
+            System.out.println("rewriting result set");
+            reWriteBuffer(buffer,queryId);
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return buffer;
+        }
         return buffer;
 
     }
 
     public static void reWriteBuffer(Buffer buffer,String queryId) {
         byte[] bytes = buffer.getBytes();
-        printBytes("mysql response data:",bytes,true);
         if (bytes[0]==1) {
+//            printBytes("query data",bytes,false);
             QueryResult queryResult = readBytes(bytes);
-            ByteBuffer byteBuffer = writeBufferBytes(reWriteQueryResult(queryResult,queryId),buffer);
+
+            QueryResult newQueryResult= reWriteQueryResult(queryResult,queryId);
+
+            ByteBuffer byteBuffer = writeBufferBytes(newQueryResult,buffer);
+            printBytes("rewrited bytes:",byteBuffer.array(),false);
             buffer.setBytes(0,byteBuffer.array());
         }
 
@@ -54,13 +60,19 @@ public class WriteBuffer {
     public static QueryResult reWriteQueryResult(QueryResult queryResult,String queryId){
         QueryRequest queryRequest = new QueryRequest(queryId,queryResult);
         String payload = JSON.toJSONString(queryRequest);
-        String response = SQLConverter.sendPostWithJson(DECRYPT_API,payload);
-
+        HashMap<String, String> headers = new HashMap<>(3);
+        headers.put("content-type", "application/json");
+        String response = SQLConverter.sendPostWithJson(DECRYPT_API,payload,headers);
+        System.out.println(" decrypt data response:");
+        System.out.println(response);
         return parseData(response);
     }
 
     public static QueryResult parseData(String resp){
         QueryResponse queryResponse = JSON.parseObject(resp, QueryResponse.class);
+//        System.out.println("queryId:"+queryResponse.getQueryId());
+//        System.out.println("columns:"+queryResponse.getData().columns);
+//        System.out.println("rows:"+queryResponse.getData().rows);
         return new QueryResult(queryResponse);
     }
 
@@ -111,13 +123,13 @@ public class WriteBuffer {
      * @return formatted java object
      */
     public static QueryResult readBytes(byte[] bytes){
-        printBytes("query bytes:",bytes,true);
+        printBytes("query bytes",bytes,true);
         MysqlMessage mysqlMessage = new MysqlMessage(bytes);
         ColumnCountPacket columnCountPacket = new ColumnCountPacket(mysqlMessage);
         columnCountPacket.read(bytes);
         ColumnDefinitionPacket columnDefinitionPacket = new ColumnDefinitionPacket(mysqlMessage);
         List<String> columns = new ArrayList<>();
-        List<String> rows = new ArrayList<>();
+        List<List<String>> rows = new ArrayList<>();
         List<List<byte[]>> rowBytes = new ArrayList<>();
         for (int i = 0; i < columnCountPacket.columnCount; i++) {
             try {
@@ -133,17 +145,21 @@ public class WriteBuffer {
          * still by now we don't know how to separate the end bytes of a data packet,so it will continue
          * read bytes to the last one
          */
-        for (; mysqlMessage.position() < mysqlMessage.length(); ) {
-            ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(mysqlMessage, columnCountPacket.columnCount);
+        try{
+            for (; mysqlMessage.position() < mysqlMessage.length(); ) {
+                ResultsetRowPacket resultsetRowPacket = new ResultsetRowPacket(mysqlMessage, columnCountPacket.columnCount);
 
-            resultsetRowPacket.read(bytes);
+                resultsetRowPacket.read(bytes);
 
-            if (resultsetRowPacket.columnValues.size() == columnCountPacket.columnCount) {
-                rows.add(resultsetRowPacket.toString());
-                rowBytes.add(resultsetRowPacket.columnValues);
+                if (resultsetRowPacket.columnValues.size() == columnCountPacket.columnCount) {
+                    rows.add(resultsetRowPacket.getColumnsString());
+                    rowBytes.add(resultsetRowPacket.columnValues);
+                }
             }
+        }catch (Exception e){
+            //todo: decide when to stop unpack mysql data of row packet
         }
-        return new QueryResult(columns,rowBytes);
+        return new QueryResult(columns,rows);
     }
 
 }
