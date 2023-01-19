@@ -21,13 +21,13 @@ public class WriteBuffer {
 
     public static Buffer reWrite(Buffer buffer, String queryId) {
         byte[] bytes = buffer.getBytes();
-        printBytes("mysql response data:",bytes,false);
-        System.out.println("queryId:"+queryId);
+//        printBytes("mysql response data:",bytes,false);
+//        System.out.println("queryId:"+queryId);
         if(queryId==null){
             return buffer;
         }
         try {
-            System.out.println("rewriting result set");
+//            System.out.println("rewriting result set");
             reWriteBuffer(buffer,queryId);
         }catch (Exception e){
             System.out.println(e.getMessage());
@@ -46,7 +46,7 @@ public class WriteBuffer {
             QueryResult newQueryResult= reWriteQueryResult(queryResult,queryId);
 
             ByteBuffer byteBuffer = writeBufferBytes(newQueryResult,buffer);
-            printBytes("rewrited bytes:",byteBuffer.array(),false);
+//            printBytes("rewrited bytes:",byteBuffer.array(),false);
             buffer.setBytes(0,byteBuffer.array());
         }
 
@@ -63,8 +63,8 @@ public class WriteBuffer {
         HashMap<String, String> headers = new HashMap<>(3);
         headers.put("content-type", "application/json");
         String response = SQLConverter.sendPostWithJson(DECRYPT_API,payload,headers);
-        System.out.println(" decrypt data response:");
-        System.out.println(response);
+//        System.out.println(" decrypt data response:");
+//        System.out.println(response);
         return parseData(response);
     }
 
@@ -123,7 +123,7 @@ public class WriteBuffer {
      * @return formatted java object
      */
     public static QueryResult readBytes(byte[] bytes){
-        printBytes("query bytes",bytes,true);
+//        printBytes("query bytes",bytes,true);
         MysqlMessage mysqlMessage = new MysqlMessage(bytes);
         ColumnCountPacket columnCountPacket = new ColumnCountPacket(mysqlMessage);
         columnCountPacket.read(bytes);
