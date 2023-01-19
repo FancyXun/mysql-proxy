@@ -74,14 +74,14 @@ public class MysqlProxyServer {
             clientSocket.handler(buffer ->{
                 SQLBuffer buffer1 = ReadBuffer.readFromBuffer(sqlInfo, buffer.copy());
                 this.queryId=buffer1.queryId;
-                System.out.println(this.queryId);
+//                System.out.println(this.queryId);
                     serverSocket.write(buffer1.buffer);
                     });
             System.out.println(clientSocket);
             //当收到来自mysql目标服务器的数据包时，转发给客户端
             serverSocket.handler(buffer ->{
-                System.out.println(this.queryId);
-                clientSocket.write(WriteBuffer.readFromMysqlBuffer(buffer.copy()));
+//                System.out.println(this.queryId);
+                clientSocket.write(WriteBuffer.reWrite(buffer.copy(),this.queryId));
                     }
             );
         }
